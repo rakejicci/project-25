@@ -1,0 +1,3621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolsRT - Real Prop Firm Pricing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #0f1115;
+            --bg-secondary: #1a1d24;
+            --bg-tertiary: #23272f;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(139, 92, 246, 0.4);
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+            --accent-purple: #8b5cf6;
+            --accent-purple-light: #a78bfa;
+            --accent-cyan: #06b6d4;
+            --accent-cyan-light: #22d3ee;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --blue: #3b82f6;
+            --transition-fast: 0.15s;
+            --transition-base: 0.3s;
+            --transition-slow: 0.5s;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f1115 0%, #1a1520 50%, #1a1d24 100%);
+            color: var(--text-primary);
+            line-height: 1.65;
+            min-height: 100vh;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+        
+        * {
+            -webkit-tap-highlight-color: rgba(139, 92, 246, 0.2);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .hero {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .pick-card, .firm-card {
+            animation: fadeInUp 0.6s ease-out forwards;
+            animation-delay: calc(var(--delay) * 0.1s);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+        
+        /* Header */
+        .header { 
+            background: rgba(15, 17, 21, 0.95); 
+            backdrop-filter: saturate(180%) blur(20px);
+            padding: 20px 0; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            padding: 12px 0;
+            background: rgba(15, 17, 21, 0.98);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15);
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .guides-btn {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--accent-purple-light);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .guides-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+
+        .logo { 
+            font-size: 20px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-tools {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .logo-rt {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        
+        .code-badge { 
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            color: white; 
+            padding: 8px 18px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .code-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Hero */
+        .hero { 
+            text-align: center; 
+            padding: 60px 0 50px;
+            background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+        }
+        
+        .hero h1 { 
+            font-size: 64px; 
+            font-weight: 700; 
+            margin-bottom: 20px; 
+            color: var(--text-primary);
+            letter-spacing: -2.5px;
+            line-height: 1.1;
+        }
+        
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text;
+        }
+        
+        .section-title {
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-purple-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-subtitle { 
+            font-size: 20px; 
+            color: var(--text-secondary); 
+            margin-bottom: 28px; 
+            font-weight: 400;
+            letter-spacing: -0.2px;
+        }
+        
+        .hero-stats { 
+            color: var(--accent-cyan); 
+            font-size: 15px; 
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: rgba(6, 182, 212, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+            margin-bottom: 32px;
+            transition: all 0.3s;
+        }
+
+        .hero-stats:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(6, 182, 212, 0.15);
+        }
+        
+        .hero-stats::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .hero-cta-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .hero-cta-primary {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 17px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-cta-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .hero-cta-primary:hover::before {
+            left: 100%;
+        }
+        
+        .hero-cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+        }
+        
+        .hero-cta-secondary {
+            color: var(--text-secondary);
+            padding: 18px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .hero-cta-secondary:hover {
+            color: var(--accent-purple);
+            transform: translateX(4px);
+        }
+        
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .section-title { 
+            font-size: 36px; 
+            color: var(--text-primary); 
+            margin-bottom: 12px; 
+            font-weight: 700;
+            letter-spacing: -1.5px;
+        }
+        
+        .section-subtitle { 
+            color: var(--text-tertiary); 
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: -0.1px;
+        }
+
+        /* Filter/Sort Controls */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .filter-btn, .sort-btn {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--text-secondary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover, .sort-btn:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple-light);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .sort-select {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 180px;
+        }
+
+        .sort-select:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .account-select {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+
+        .account-select:hover {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.12);
+        }
+
+        .account-select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Picks Section */
+        .picks-section { 
+            margin: 50px auto;
+            padding: 0 32px;
+        }
+        
+        .picks-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .pick-card { 
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(6, 182, 212, 0.02) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px; 
+            padding: 40px 36px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: pointer; 
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .pick-card:hover { 
+            border-color: var(--border-hover);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 28px 56px rgba(139, 92, 246, 0.25), 0 0 40px rgba(139, 92, 246, 0.15);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+        }
+
+        .pick-card:active {
+            transform: translateY(-6px) scale(1.01);
+        }
+        
+        .badge-top { 
+            position: absolute; 
+            top: -12px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: white; 
+            padding: 6px 16px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.8px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .feature-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .feature-badge {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--accent-purple-light);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feature-badge.instant {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .feature-badge.daily {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: rgba(6, 182, 212, 0.3);
+            color: var(--accent-cyan);
+        }
+        
+        .card-category { 
+            color: var(--accent-purple-light);
+            font-size: 11px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 1.2px; 
+            margin-bottom: 16px;
+            margin-top: 4px;
+        }
+        
+        .pick-card h3 { 
+            color: var(--text-primary);
+            font-size: 28px; 
+            margin-bottom: 8px; 
+            font-weight: 700;
+            letter-spacing: -0.8px;
+        }
+        
+        .price { 
+            font-size: 48px; 
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-cyan-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700; 
+            margin: 24px 0;
+            letter-spacing: -2px;
+            position: relative;
+            display: inline-block;
+            filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.4));
+        }
+        
+        .price::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0.5;
+        }
+        
+        .price span { 
+            font-size: 17px; 
+            color: var(--text-tertiary);
+            font-weight: 400;
+            letter-spacing: -0.2px;
+        }
+        
+        .code-display { 
+            text-align: center; 
+            margin: 16px 0; 
+            font-size: 14px; 
+            color: var(--text-tertiary);
+        }
+        
+        .code-display strong { 
+            color: var(--accent-cyan);
+            font-weight: 600;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: rgba(6, 182, 212, 0.15);
+            padding: 3px 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .code-display strong:hover {
+            background: rgba(6, 182, 212, 0.25);
+            transform: scale(1.05);
+        }
+        
+        .specs { 
+            margin: 28px 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(6, 182, 212, 0.02) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+        }
+        
+        .spec-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 12px 0; 
+            border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .spec-item:hover {
+            padding-left: 8px;
+            background: rgba(139, 92, 246, 0.03);
+            border-radius: 6px;
+        }
+        
+        .spec-item::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: 700;
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        .spec-item:last-child { border-bottom: none; }
+        .spec-item:first-child { padding-top: 0; }
+        
+        .spec-label { 
+            color: var(--text-tertiary);
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .spec-value { 
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .cta-btn { 
+            display: block; 
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            color: white; 
+            text-align: center; 
+            padding: 16px; 
+            border-radius: 10px; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 15px; 
+            margin-top: 28px; 
+            transition: all 0.3s;
+            letter-spacing: -0.2px;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .cta-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .cta-btn:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+        }
+        
+        /* Comparison Table */
+        .comparison-section {
+            margin: 60px auto;
+            padding: 0 32px;
+            max-width: 1500px;
+        }
+        
+        .table-wrapper { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            background: var(--bg-secondary);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.08);
+        }
+        
+        table { 
+            width: 100%; 
+            min-width: 1100px; 
+            border-collapse: collapse;
+        }
+        
+        thead { 
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th { 
+            padding: 20px 24px; 
+            text-align: left; 
+            color: var(--accent-purple-light);
+            font-weight: 600; 
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            position: relative;
+        }
+
+        .tooltip-trigger {
+            cursor: help;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tooltip-icon {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.3);
+            color: var(--accent-purple-light);
+            font-size: 10px;
+            line-height: 14px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 400;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--bg-tertiary);
+        }
+
+        .tooltip-trigger:hover .tooltip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-12px);
+        }
+        
+        td { 
+            padding: 20px 24px; 
+            font-size: 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr { 
+            transition: all 0.3s ease;
+        }
+        tbody tr:hover { 
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+            transform: scale(1.01);
+        }
+
+        tbody tr:hover td {
+            color: var(--text-primary);
+        }
+        
+        tbody tr:nth-child(even) {
+            background: rgba(139, 92, 246, 0.01);
+        }
+        
+        tbody tr:nth-child(even):hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+        }
+        
+        .firm-name-cell { 
+            font-weight: 600; 
+            color: var(--text-primary);
+        }
+        
+        .price-cell { 
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-size: 17px;
+            position: relative;
+        }
+        
+        .positive { 
+            color: var(--success); 
+            font-weight: 600;
+        }
+        .positive::before {
+            content: '✓ ';
+            font-size: 14px;
+        }
+        
+        .negative { 
+            color: var(--danger);
+            font-weight: 600;
+        }
+        .negative::before {
+            content: '✗ ';
+            font-size: 14px;
+        }
+        
+        /* Firms Section */
+        .firms-section {
+            margin: 60px auto;
+            padding: 0 32px;
+        }
+
+        .firms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+
+        .firm-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(6, 182, 212, 0.02) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 16px;
+            padding: 32px 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .firm-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 28px 56px rgba(139, 92, 246, 0.2), 0 0 40px rgba(139, 92, 246, 0.12);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+        }
+
+        .firm-card.hidden {
+            display: none;
+        }
+
+        .firm-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .firm-action-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple-light);
+            text-decoration: none;
+            text-align: center;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 24px;
+            transition: all 0.3s;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .firm-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .firm-action-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .firm-action-btn:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--border-hover);
+            color: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        /* Firms Table */
+        .firms-table-wrapper {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.08);
+        }
+
+        .firms-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .firms-table thead {
+            background: rgba(139, 92, 246, 0.05);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .firms-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .firms-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s;
+        }
+
+        .firms-table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.05) 0%, rgba(6, 182, 212, 0.03) 100%);
+            transform: translateX(4px);
+        }
+
+        .firms-table tbody tr.hidden {
+            display: none;
+        }
+
+        .firms-table td {
+            padding: 20px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* Firm Name Cell */
+        .firm-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .firm-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background-clip: padding-box;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            flex-shrink: 0;
+            padding: 8px;
+        }
+
+        .firm-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .firm-info {
+            flex: 1;
+        }
+
+        .firm-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .firm-name {
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .firm-favorite {
+            color: var(--text-tertiary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0.6;
+        }
+
+        .firm-favorite:hover {
+            color: var(--accent-purple);
+            transform: scale(1.15);
+            opacity: 1;
+        }
+
+        .firm-badge {
+            font-size: 11px;
+            color: var(--accent-cyan);
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        /* True Cost Highlight */
+        .true-cost {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--success) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 140px;
+        }
+
+        .view-btn {
+            padding: 10px 16px;
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 10px;
+            color: var(--accent-purple-light);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .view-btn:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--accent-purple);
+            transform: translateY(-1px);
+        }
+
+        .cta-btn {
+            padding: 11px 18px;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--success) 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .compare-checkbox {
+            margin-right: 8px;
+        }
+        
+        .trustpilot-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            color: var(--text-tertiary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .trustpilot-link:hover {
+            color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        
+        .trustpilot-stars {
+            color: #00b67a;
+            font-size: 14px;
+        }
+        
+        /* Modal */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000; 
+            overflow-y: auto;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal.active { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 40px 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content { 
+            background: var(--bg-secondary);
+            border-radius: 20px; 
+            max-width: 920px; 
+            width: 100%; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            position: relative;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.3);
+            animation: fadeInUp 0.4s ease-out;
+        }
+        
+        .modal-header { 
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            padding: 40px; 
+            border-radius: 20px 20px 0 0; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-title { 
+            font-size: 32px; 
+            margin-bottom: 8px; 
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .modal-subtitle { 
+            font-size: 16px; 
+            opacity: 0.9;
+        }
+        
+        .close-modal { 
+            position: absolute; 
+            top: 28px; 
+            right: 28px; 
+            background: rgba(255, 255, 255, 0.15);
+            border: none; 
+            color: white; 
+            font-size: 24px; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        
+        .close-modal:hover { 
+            background: rgba(255, 255, 255, 0.25);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body { 
+            padding: 40px;
+        }
+        
+        .account-type-section { 
+            margin-bottom: 40px;
+        }
+        
+        .account-type-section:last-child { 
+            margin-bottom: 0;
+        }
+        
+        .account-type-section h3 { 
+            color: var(--accent-purple-light);
+            font-size: 22px; 
+            margin-bottom: 24px; 
+            padding-bottom: 12px; 
+            border-bottom: 2px solid rgba(139, 92, 246, 0.2);
+            font-weight: 700;
+            letter-spacing: -0.6px;
+        }
+        
+        .account-item { 
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(6, 182, 212, 0.02) 100%);
+            padding: 28px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            transition: all 0.3s;
+        }
+        
+        .account-item:hover {
+            border-color: var(--border-hover);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.04) 0%, rgba(6, 182, 212, 0.04) 100%);
+            transform: translateX(4px);
+        }
+        
+        .account-name { 
+            font-size: 19px; 
+            font-weight: 700; 
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            letter-spacing: -0.4px;
+        }
+        
+        .account-specs { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 16px; 
+            margin: 20px 0;
+        }
+        
+        /* Footer */
+        footer { 
+            text-align: center; 
+            padding: 50px 32px 30px; 
+            border-top: 1px solid rgba(139, 92, 246, 0.15);
+            margin-top: 80px;
+            background: radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.03) 0%, transparent 60%);
+        }
+        
+        .footer-content { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 40px; 
+            margin-bottom: 40px; 
+            text-align: left; 
+            max-width: 900px; 
+            margin: 0 auto 40px;
+        }
+        
+        .footer-section h4 { 
+            color: var(--accent-purple-light);
+            margin-bottom: 20px; 
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+        
+        .footer-section a { 
+            color: var(--text-tertiary);
+            text-decoration: none; 
+            display: block; 
+            margin-bottom: 12px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .footer-section a:hover { 
+            color: var(--accent-cyan);
+            transform: translateX(4px);
+        }
+        
+        .copyright {
+            color: var(--text-tertiary);
+            font-size: 14px;
+            margin-top: 30px;
+        }
+
+        .footer-meta {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
+            color: var(--text-tertiary);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .footer-meta p {
+            margin-bottom: 8px;
+        }
+
+        .last-updated {
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+        
+        /* Compare Feature */
+        .compare-checkbox {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-purple);
+            z-index: 2;
+            transition: transform 0.2s;
+        }
+
+        .compare-checkbox:hover {
+            transform: scale(1.2);
+        }
+        
+        .compare-bar {
+            position: fixed;
+            bottom: -100px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 200;
+            transition: bottom 0.3s ease;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .compare-bar.active {
+            bottom: 0;
+        }
+        
+        .compare-bar-text {
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .compare-bar-btn {
+            background: white;
+            color: var(--accent-purple);
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .compare-bar-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .compare-bar-clear {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .compare-bar-clear:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .compare-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            overflow-y: auto;
+            backdrop-filter: blur(8px);
+        }
+        
+        .compare-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .quick-compare-selector {
+            background: var(--bg-primary);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-bottom: 32px;
+        }
+        
+        .quick-compare-selector h3 {
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .quick-compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .quick-compare-dropdown {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .quick-compare-dropdown label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .quick-compare-dropdown select {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-compare-dropdown select:hover {
+            border-color: var(--accent-purple);
+        }
+        
+        .quick-compare-dropdown select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .quick-compare-btn {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.3s;
+        }
+        
+        .quick-compare-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+        
+        .quick-compare-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .compare-modal-content {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            max-width: 1500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.3);
+            animation: fadeInUp 0.4s ease-out;
+        }
+        
+        .compare-header {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            padding: 32px 40px;
+            border-radius: 20px 20px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .compare-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            margin: 0;
+        }
+        
+        .compare-body {
+            padding: 40px;
+        }
+        
+        .compare-selectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 2px solid rgba(139, 92, 246, 0.2);
+        }
+        
+        .compare-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .compare-selector label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .compare-selector select {
+            background: var(--bg-primary);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .compare-selector select:hover {
+            border-color: var(--accent-purple);
+        }
+        
+        .compare-selector select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .compare-grid {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .compare-grid-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .compare-firm {
+            background: var(--bg-primary);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+
+        .compare-firm:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.2);
+        }
+        
+        .compare-firm h3 {
+            color: var(--accent-purple-light);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.6px;
+        }
+        
+        .compare-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+            transition: all 0.2s;
+        }
+
+        .compare-row:hover {
+            padding-left: 8px;
+            background: rgba(139, 92, 246, 0.03);
+            border-radius: 6px;
+        }
+        
+        .compare-row:last-child {
+            border-bottom: none;
+        }
+
+        .compare-row.highlight-better .compare-value {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .compare-row.highlight-worse .compare-value {
+            color: var(--danger);
+            font-weight: 700;
+        }
+        
+        .compare-label {
+            color: var(--text-tertiary);
+            font-weight: 400;
+            font-size: 14px;
+        }
+        
+        .compare-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 0 20px; }
+            .nav { padding: 0 20px; }
+
+            .nav-right {
+                gap: 10px;
+            }
+
+            .guides-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+
+            .hero { padding: 40px 0 30px; }
+            .hero h1 { 
+                font-size: 36px; 
+                letter-spacing: -1.2px;
+                margin-bottom: 16px;
+            }
+            .hero-subtitle {
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+            .hero-stats {
+                font-size: 13px;
+                padding: 10px 18px;
+            }
+            .hero-cta-primary {
+                width: 100%;
+                justify-content: center;
+                padding: 16px 32px;
+                font-size: 16px;
+            }
+            .hero-cta-secondary {
+                width: 100%;
+                text-align: center;
+                padding: 14px 28px;
+            }
+            
+            .section-title { 
+                font-size: 28px;
+                letter-spacing: -1px;
+            }
+            .section-subtitle {
+                font-size: 14px;
+            }
+            
+            .picks-section { padding: 0 20px; }
+            .picks-grid { 
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .pick-card {
+                padding: 32px 24px;
+            }
+            .pick-card:hover {
+                transform: translateY(-4px) scale(1.01);
+            }
+            .badge-top {
+                font-size: 9px;
+                padding: 5px 12px;
+            }
+            .pick-card h3 {
+                font-size: 24px;
+            }
+            .price {
+                font-size: 40px;
+            }
+            .price span {
+                font-size: 15px;
+            }
+            
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .filter-group {
+                width: 100%;
+                justify-content: center;
+            }
+
+
+            .firms-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .firm-card {
+                padding: 28px 24px;
+            }
+
+            .firm-card:hover {
+                transform: translateY(-4px) scale(1.01);
+            }
+
+            .firm-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .firm-name {
+                font-size: 16px;
+            }
+
+            .firm-badge {
+                font-size: 10px;
+            }
+
+            .firm-action-btn {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .comparison-section { padding: 0 20px; }
+            .firms-section { padding: 0 20px; }
+            
+            .table-wrapper {
+                border-radius: 12px;
+            }
+            table { 
+                min-width: 800px;
+                font-size: 13px;
+            }
+            th, td { 
+                padding: 14px 12px;
+                font-size: 13px;
+            }
+            th {
+                font-size: 10px;
+            }
+            .price-cell {
+                font-size: 15px;
+            }
+            
+            .controls-bar { 
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .filter-group {
+                justify-content: center;
+                width: 100%;
+            }
+            .filter-btn, .sort-btn {
+                padding: 7px 8px;
+                font-size: 10px;
+                flex: 1;
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .sort-select {
+                width: 100%;
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+            
+            .modal-content { 
+                margin: 20px;
+                max-height: 85vh;
+                border-radius: 16px;
+            }
+            .modal-header { 
+                padding: 24px 20px;
+                border-radius: 16px 16px 0 0;
+            }
+            .modal-title {
+                font-size: 24px;
+                padding-right: 40px;
+            }
+            .modal-subtitle {
+                font-size: 14px;
+            }
+            .close-modal {
+                top: 20px;
+                right: 20px;
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+            .modal-body { 
+                padding: 24px 20px;
+            }
+            .account-type-section h3 {
+                font-size: 18px;
+            }
+            .account-item {
+                padding: 20px;
+            }
+            .account-name {
+                font-size: 17px;
+            }
+            .account-specs {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .footer-content { 
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 32px;
+            }
+            .footer-section a {
+                display: inline-block;
+            }
+            
+            .quick-compare-grid { 
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .quick-compare-selector {
+                padding: 24px 20px;
+            }
+            .quick-compare-selector h3 {
+                font-size: 16px;
+            }
+            .quick-compare-dropdown label {
+                font-size: 12px;
+            }
+            .quick-compare-dropdown select {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+            .quick-compare-btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+            
+            .compare-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px;
+            }
+            .compare-selectors { 
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding-bottom: 24px;
+            }
+            .compare-selector label {
+                font-size: 12px;
+            }
+            .compare-selector select {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+            .compare-grid-content {
+                grid-template-columns: 1fr;
+            }
+            .compare-firm {
+                padding: 24px 20px;
+            }
+            .compare-firm h3 {
+                font-size: 20px;
+            }
+            .compare-row {
+                padding: 12px 0;
+            }
+            .compare-label, .compare-value {
+                font-size: 13px;
+            }
+            .compare-header {
+                padding: 24px 20px;
+            }
+            .compare-header h2 {
+                font-size: 22px;
+                padding-right: 40px;
+            }
+            .compare-body {
+                padding: 24px 20px;
+            }
+            
+            .compare-bar {
+                flex-direction: column;
+                padding: 16px;
+                gap: 12px;
+            }
+            .compare-bar-text {
+                font-size: 14px;
+                text-align: center;
+            }
+            .compare-bar-btn {
+                width: 100%;
+                padding: 14px 24px;
+                font-size: 15px;
+            }
+            .compare-bar-clear {
+                width: 100%;
+                padding: 12px 20px;
+            }
+            
+            .compare-checkbox {
+                width: 24px;
+                height: 24px;
+                top: 12px;
+                right: 12px;
+            }
+            
+            .spec-item {
+                font-size: 13px;
+                padding: 10px 0;
+            }
+            .spec-item:hover {
+                padding-left: 4px;
+            }
+            
+            .feature-badges {
+                gap: 6px;
+            }
+            .feature-badge {
+                font-size: 10px;
+                padding: 3px 10px;
+            }
+            
+            .tooltip {
+                font-size: 12px;
+                padding: 8px 12px;
+                white-space: normal;
+                max-width: 200px;
+                left: auto;
+                right: 0;
+                transform: translateY(-8px);
+            }
+            .tooltip::after {
+                left: auto;
+                right: 20px;
+            }
+            
+            .code-badge {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+            
+            .trustpilot-link {
+                font-size: 12px;
+            }
+            
+            .firm-action-btn {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .cta-btn {
+                padding: 14px;
+                font-size: 14px;
+            }
+            
+            /* Mobile-specific optimizations */
+            body {
+                font-size: 14px;
+            }
+            
+            /* Prevent zoom on input focus */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+            
+            /* Better mobile scrolling */
+            .modal-content,
+            .compare-modal-content {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Sticky header mobile adjustment */
+            .header.scrolled {
+                padding: 10px 0;
+            }
+            
+            /* Mobile table scroll hint */
+            .table-wrapper::after {
+                content: '→ Scroll';
+                position: absolute;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+                color: white;
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: 600;
+                opacity: 0.8;
+                pointer-events: none;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 0.8; }
+                50% { opacity: 0.4; }
+            }
+            
+            .table-wrapper.scrolled::after {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            .section-title {
+                font-size: 24px;
+            }
+            .pick-card h3 {
+                font-size: 22px;
+            }
+            .price {
+                font-size: 36px;
+            }
+            .filter-btn {
+                font-size: 9px;
+                padding: 6px 8px;
+                white-space: nowrap;
+            }
+            .modal-title {
+                font-size: 22px;
+            }
+            .compare-header h2 {
+                font-size: 20px;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <nav class="nav">
+            <a href="#" class="logo">
+                <span class="logo-tools">Tools</span><span class="logo-rt">RT</span>
+            </a>
+            <div class="nav-right">
+                <a href="#firm-guides" class="guides-btn">
+                    📚 Firm Guides
+                </a>
+                <div class="code-badge" onclick="copyCode()">CODE: RT</div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="container">
+            <h1>Futures Prop Firms<br><span class="gradient-text">Real Pricing Revealed</span></h1>
+            <p class="hero-subtitle">Compare up to 3 firms side-by-side. Find the best deal instantly.</p>
+            <div class="hero-cta-group">
+                <button class="hero-cta-primary" onclick="openQuickCompare()">
+                    Compare Up to 3 Firms →
+                </button>
+                <a href="#firms" class="hero-cta-secondary">Browse All Firms</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURED FIRMS -->
+    <section class="picks-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Best Value Firms</h2>
+                <p class="section-subtitle">Our top picks for value and performance</p>
+            </div>
+            <div class="picks-grid">
+                <div class="pick-card" style="--delay: 0" onclick="showModal('tradeify')">
+                    <div class="badge-top">INSTANT</div>
+                    <div class="feature-badges">
+                        <span class="feature-badge instant">Instant Funding</span>
+                        <span class="feature-badge">Project X</span>
+                    </div>
+                    <div class="card-category">No Evaluation Required</div>
+                    <h3>Tradeify</h3>
+                    <div class="price">$244 <span>/ $25K Instant</span></div>
+                    <div class="code-display">Use code <strong onclick="event.stopPropagation(); copyCode();">RT</strong></div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Max Funding</span>
+                            <span class="spec-value">$150K</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Profit Split</span>
+                            <span class="spec-value">90%</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Evaluation</span>
+                            <span class="spec-value">Instant Funding</span>
+                        </div>
+                    </div>
+                    <a href="https://tradeify.co/?ref=2676" class="cta-btn" target="_blank" onclick="event.stopPropagation()">Get Started →</a>
+                </div>
+
+                <div class="pick-card" style="--delay: 1" onclick="showModal('tpt')">
+                    <div class="badge-top">MOST POPULAR</div>
+                    <div class="feature-badges">
+                        <span class="feature-badge daily">Daily Payouts</span>
+                    </div>
+                    <div class="card-category">Daily Payouts from Day 1</div>
+                    <h3>TakeProfitTrader</h3>
+                    <div class="price">$90 <span>/ $25K</span></div>
+                    <div class="code-display">Use code <strong onclick="event.stopPropagation(); copyCode();">RT</strong></div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Max Funding</span>
+                            <span class="spec-value">$125K</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Profit Split</span>
+                            <span class="spec-value">80-90%</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Payouts</span>
+                            <span class="spec-value">Daily (PRO)</span>
+                        </div>
+                    </div>
+                    <a href="https://takeprofittrader.com/?referralCode=RAKE" class="cta-btn" target="_blank" onclick="event.stopPropagation()">Get Started →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK COMPARISON TABLE -->
+    <section class="comparison-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Compare Accounts</h2>
+                <p class="section-subtitle">Select account types and sizes to compare pricing and features</p>
+            </div>
+            <div class="table-wrapper">
+                <table id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>Firm</th>
+                            <th>Account Type</th>
+                            <th>Account Size</th>
+                            <th>Discounted Price</th>
+                            <th>Daily Loss</th>
+                            <th>Max Loss</th>
+                            <th>Profit Split</th>
+                            <th>Profit Target</th>
+                            <th>Project X?</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-firm="mffu">
+                            <td class="firm-name-cell">MyFundedFutures</td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('mffu'); updateMffuSizeOptions()">
+                                    <option value="core" selected>Core Plan</option>
+                                    <option value="scale">Scale Plan</option>
+                                    <option value="pro">Pro Plan</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="account-select" id="mffu-size" onchange="updateAccountData('mffu')">
+                                    <option value="50k" selected>$50,000</option>
+                                </select>
+                            </td>
+                            <td class="price-cell" data-price>$72</td>
+                            <td data-daily-loss>$1,200</td>
+                            <td data-max-loss>$2,500</td>
+                            <td class="positive" data-split>80%</td>
+                            <td data-target>$3,000</td>
+                            <td style="text-align: center;">❌</td>
+                            <td><button onclick="quickCompareWith('mffu')" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'">Compare</button></td>
+                        </tr>
+                        <tr data-firm="tradeify">
+                            <td class="firm-name-cell">Tradeify</td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('tradeify')">
+                                    <option value="growth" selected>Growth</option>
+                                    <option value="lightning">Lightning (Instant)</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('tradeify')">
+                                    <option value="50k" selected>$50,000</option>
+                                    <option value="100k">$100,000</option>
+                                    <option value="150k">$150,000</option>
+                                </select>
+                            </td>
+                            <td class="price-cell" data-price>$97</td>
+                            <td data-daily-loss>None</td>
+                            <td data-max-loss>$2,000</td>
+                            <td class="positive" data-split>90%</td>
+                            <td data-target>$3,000</td>
+                            <td style="text-align: center;">✅</td>
+                            <td><button onclick="quickCompareWith('tradeify')" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'">Compare</button></td>
+                        </tr>
+                        <tr data-firm="tpt">
+                            <td class="firm-name-cell">TakeProfitTrader</td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('tpt')">
+                                    <option value="challenge" selected>Challenge</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('tpt')">
+                                    <option value="25k" selected>$25,000</option>
+                                    <option value="50k">$50,000</option>
+                                    <option value="100k">$100,000</option>
+                                    <option value="125k">$125,000</option>
+                                </select>
+                            </td>
+                            <td class="price-cell" data-price>$90</td>
+                            <td data-daily-loss>$600</td>
+                            <td data-max-loss>$1,000</td>
+                            <td class="positive" data-split>80→90</td>
+                            <td data-target>$1,500</td>
+                            <td style="text-align: center;">❌</td>
+                            <td><button onclick="quickCompareWith('tpt')" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'">Compare</button></td>
+                        </tr>
+                        <tr data-firm="alpha">
+                            <td class="firm-name-cell">Alpha Futures</td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('alpha'); updateAlphaSizeOptions()">
+                                    <option value="standard" selected>Standard</option>
+                                    <option value="advanced">Advanced</option>
+                                    <option value="zero">Zero</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="account-select" id="alpha-size" onchange="updateAccountData('alpha')">
+                                    <option value="25k" selected>$25,000</option>
+                                    <option value="50k">$50,000</option>
+                                    <option value="100k">$100,000</option>
+                                    <option value="150k">$150,000</option>
+                                </select>
+                            </td>
+                            <td class="price-cell" data-price>$72</td>
+                            <td data-daily-loss>$500</td>
+                            <td data-max-loss>$750</td>
+                            <td class="positive" data-split>70→90</td>
+                            <td data-target>$2,500</td>
+                            <td style="text-align: center;">✅</td>
+                            <td><button onclick="quickCompareWith('alpha')" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'">Compare</button></td>
+                        </tr>
+                        <tr data-firm="lucid">
+                            <td class="firm-name-cell">Lucid Trading</td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('lucid')">
+                                    <option value="lucidtest" selected>LucidTest</option>
+                                    <option value="luciddirect">LucidDirect (Instant)</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="account-select" onchange="updateAccountData('lucid')">
+                                    <option value="50k" selected>$50,000</option>
+                                    <option value="100k">$100,000</option>
+                                    <option value="150k">$150,000</option>
+                                </select>
+                            </td>
+                            <td class="price-cell" data-price>$81</td>
+                            <td data-daily-loss>$1,200</td>
+                            <td data-max-loss>$2,000</td>
+                            <td class="positive" data-split>90%</td>
+                            <td data-target>$4,000</td>
+                            <td style="text-align: center;">✅</td>
+                            <td><button onclick="quickCompareWith('lucid')" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'">Compare</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- BROWSE ALL FIRMS -->
+    <section class="firms-section" id="firms">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Browse All Firms</h2>
+                <p class="section-subtitle">Explore detailed pricing or select firms to compare</p>
+            </div>
+            
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterFirms('all')">All Firms</button>
+                    <button class="filter-btn" onclick="filterFirms('under100')">Under $100</button>
+                    <button class="filter-btn" onclick="filterFirms('projectx')">Project X</button>
+                    <button class="filter-btn" onclick="filterFirms('instant')">Instant Funding</button>
+                    <button class="filter-btn" onclick="filterFirms('90split')">90% Split</button>
+                </div>
+                <select class="sort-select" onchange="sortFirms(this.value)">
+                    <option value="default">Sort By</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="accounts">Max Accounts</option>
+                    <option value="discount">Highest Discount</option>
+                </select>
+            </div>
+
+            <div class="firms-grid" id="firmsGrid">
+                <div class="firm-card" style="--delay: 0" data-firm="mffu" data-price="72" data-accounts="3" data-discount="5" data-projectx="no" data-instant="no" data-split="90" onclick="handleCardClick(event, 'mffu')">
+                    <input type="checkbox" class="compare-checkbox" onclick="event.stopPropagation(); toggleCompare('mffu')" id="compare-mffu">
+                    <div class="firm-header">
+                        <div class="firm-icon">
+                            <span style="font-size: 16px; font-weight: 700; color: var(--accent-purple);">MFF</span>
+                        </div>
+                        <div class="firm-info">
+                            <div class="firm-name-row">
+                                <span class="firm-name">MyFundedFutures</span>
+                                <span class="firm-favorite">♡</span>
+                            </div>
+                            <div class="firm-badge">Est. 2023 • Core Plan</div>
+                        </div>
+                    </div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Starting At</span>
+                            <span class="spec-value">$72</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Max Accounts</span>
+                            <span class="spec-value">3</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount Code</span>
+                            <span class="spec-value">RT</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount</span>
+                            <span class="spec-value">5% OFF</span>
+                        </div>
+                    </div>
+                    <button class="firm-action-btn">View All Accounts →</button>
+                    <a href="/firm-myfundedfutures.html" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()" style="margin-top: 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color);">
+                        <span>📖 User Guide</span>
+                    </a>
+                    <a href="https://www.trustpilot.com/review/myfundedfutures.com" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()">
+                        <span class="trustpilot-stars">★★★★★</span>
+                        <span>Trustpilot Reviews</span>
+                    </a>
+                </div>
+
+                <div class="firm-card" style="--delay: 1" data-firm="alpha" data-price="72" data-accounts="3" data-discount="10" data-projectx="yes" data-instant="no" data-split="90" onclick="handleCardClick(event, 'alpha')">
+                    <input type="checkbox" class="compare-checkbox" onclick="event.stopPropagation(); toggleCompare('alpha')" id="compare-alpha">
+                    <div class="firm-header">
+                        <div class="firm-icon">
+                            <span style="font-size: 18px; font-weight: 700; color: var(--accent-purple);">AF</span>
+                        </div>
+                        <div class="firm-info">
+                            <div class="firm-name-row">
+                                <span class="firm-name">Alpha Futures</span>
+                                <span class="firm-favorite">♡</span>
+                            </div>
+                            <div class="firm-badge">Est. 2024 • Zero Plan</div>
+                        </div>
+                    </div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Starting At</span>
+                            <span class="spec-value">$72</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Max Accounts</span>
+                            <span class="spec-value">3</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount Code</span>
+                            <span class="spec-value">RT</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount</span>
+                            <span class="spec-value">10% OFF</span>
+                        </div>
+                    </div>
+                    <button class="firm-action-btn">View All Accounts →</button>
+                    <a href="/firm-alpha-futures.html" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()" style="margin-top: 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color);">
+                        <span>📖 User Guide</span>
+                    </a>
+                    <a href="https://www.trustpilot.com/review/alphatradingfutures.com" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()">
+                        <span class="trustpilot-stars">★★★★★</span>
+                        <span>Trustpilot Reviews</span>
+                    </a>
+                </div>
+
+                <div class="firm-card" style="--delay: 2" data-firm="tradeify" data-price="97" data-accounts="5" data-discount="30" data-projectx="yes" data-instant="yes" data-split="90" onclick="handleCardClick(event, 'tradeify')">
+                    <input type="checkbox" class="compare-checkbox" onclick="event.stopPropagation(); toggleCompare('tradeify')" id="compare-tradeify">
+                    <div class="firm-header">
+                        <div class="firm-icon">
+                            <span style="font-size: 18px; font-weight: 700; color: var(--accent-purple);">TR</span>
+                        </div>
+                        <div class="firm-info">
+                            <div class="firm-name-row">
+                                <span class="firm-name">Tradeify</span>
+                                <span class="firm-favorite">♡</span>
+                            </div>
+                            <div class="firm-badge">Est. 2023 • Project X</div>
+                        </div>
+                    </div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Starting At</span>
+                            <span class="spec-value">$97</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Max Accounts</span>
+                            <span class="spec-value">5</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount Code</span>
+                            <span class="spec-value">RT</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount</span>
+                            <span class="spec-value">30% OFF</span>
+                        </div>
+                    </div>
+                    <button class="firm-action-btn">View All Accounts →</button>
+                    <a href="/firm-tradeify.html" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()" style="margin-top: 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color);">
+                        <span>📖 User Guide</span>
+                    </a>
+                    <a href="https://www.trustpilot.com/review/tradeify.com" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()">
+                        <span class="trustpilot-stars">★★★★★</span>
+                        <span>Trustpilot Reviews</span>
+                    </a>
+                </div>
+
+                <div class="firm-card" style="--delay: 3" data-firm="tpt" data-price="90" data-accounts="5" data-discount="40" data-projectx="no" data-instant="no" data-split="80" onclick="handleCardClick(event, 'tpt')">
+                    <input type="checkbox" class="compare-checkbox" onclick="event.stopPropagation(); toggleCompare('tpt')" id="compare-tpt">
+                    <div class="firm-header">
+                        <div class="firm-icon">
+                            <span style="font-size: 16px; font-weight: 700; color: var(--accent-purple);">TPT</span>
+                        </div>
+                        <div class="firm-info">
+                            <div class="firm-name-row">
+                                <span class="firm-name">TakeProfitTrader</span>
+                                <span class="firm-favorite">♡</span>
+                            </div>
+                            <div class="firm-badge">Est. 2022 • PRO/PRO+</div>
+                        </div>
+                    </div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Starting At</span>
+                            <span class="spec-value">$90</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Max Accounts</span>
+                            <span class="spec-value">5</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount Code</span>
+                            <span class="spec-value">RT</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount</span>
+                            <span class="spec-value">40% OFF</span>
+                        </div>
+                    </div>
+                    <button class="firm-action-btn">View All Accounts →</button>
+                    <a href="/firm-takeprofittrader.html" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()" style="margin-top: 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color);">
+                        <span>📖 User Guide</span>
+                    </a>
+                    <a href="https://www.trustpilot.com/review/takeprofittrader.com" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()">
+                        <span class="trustpilot-stars">★★★★★</span>
+                        <span>Trustpilot Reviews</span>
+                    </a>
+                </div>
+
+                <div class="firm-card" style="--delay: 4" data-firm="lucid" data-price="108" data-accounts="5" data-discount="40" data-projectx="yes" data-instant="yes" data-split="90" onclick="handleCardClick(event, 'lucid')">
+                    <input type="checkbox" class="compare-checkbox" onclick="event.stopPropagation(); toggleCompare('lucid')" id="compare-lucid">
+                    <div class="firm-header">
+                        <div class="firm-icon">
+                            <span style="font-size: 18px; font-weight: 700; color: var(--accent-purple);">LT</span>
+                        </div>
+                        <div class="firm-info">
+                            <div class="firm-name-row">
+                                <span class="firm-name">Lucid Trading</span>
+                                <span class="firm-favorite">♡</span>
+                            </div>
+                            <div class="firm-badge">Est. 2025 • LucidTest</div>
+                        </div>
+                    </div>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Starting At</span>
+                            <span class="spec-value">$108</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Max Accounts</span>
+                            <span class="spec-value">5</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount Code</span>
+                            <span class="spec-value">RT</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Discount</span>
+                            <span class="spec-value">40% OFF</span>
+                        </div>
+                    </div>
+                    <button class="firm-action-btn">View All Accounts →</button>
+                    <a href="/firm-lucid.html" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()" style="margin-top: 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color);">
+                        <span>📖 User Guide</span>
+                    </a>
+                    <a href="https://www.trustpilot.com/review/lucidproptrading.com" class="trustpilot-link" target="_blank" onclick="event.stopPropagation()">
+                        <span class="trustpilot-stars">★★★★★</span>
+                        <span>Trustpilot Reviews</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="firm-guides">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="https://acrobat.adobe.com/id/urn:aaid:sc:VA6C2:24fd3870-0fca-4f86-a07b-8050940c034e" target="_blank">Trading Guides</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Popular Firms</h4>
+                    <a href="https://myfundedfutures.com/?ref=552" target="_blank">MyFundedFutures</a>
+                    <a href="https://app.alpha-futures.com/signup/RAKE/" target="_blank">Alpha Futures</a>
+                    <a href="https://tradeify.co/?ref=2676" target="_blank">Tradeify</a>
+                    <a href="https://takeprofittrader.com/?referralCode=RAKE" target="_blank">TakeProfitTrader</a>
+                    <a href="https://lucidtrading.com/ref/raketrades/" target="_blank">Lucid Trading</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Firm Guides</h4>
+                    <a href="firm-myfundedfutures.html" target="_blank">MyFundedFutures Guide</a>
+                    <a href="firm-alpha-futures.html" target="_blank">Alpha Futures Guide</a>
+                    <a href="firm-tradeify.html" target="_blank">Tradeify Guide</a>
+                    <a href="firm-takeprofittrader.html" target="_blank">TakeProfitTrader Guide</a>
+                    <a href="firm-lucid.html" target="_blank">Lucid Trading Guide</a>
+                </div>
+            </div>
+            <div class="footer-meta">
+                <p class="last-updated">Last Updated: October 1, 2025</p>
+                <p><strong>Disclaimer:</strong> Trading futures and derivatives involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results. The information provided on this site is for educational and comparison purposes only and should not be considered financial advice. Prop firm terms, pricing, and policies are subject to change. Always verify current terms and conditions directly with each firm before making any purchase. This site contains affiliate links, and we may earn a commission from firms featured here at no additional cost to you.</p>
+            </div>
+            <p class="copyright">&copy; 2025 ToolsRT. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- MODALS -->
+    <div id="accountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <p class="modal-subtitle" id="modalSubtitle"></p>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div class="compare-bar" id="compareBar">
+        <span class="compare-bar-text" id="compareBarText">Select 2-3 firms to compare</span>
+        <button class="compare-bar-btn" onclick="showCompareModal()">Compare Now →</button>
+        <button class="compare-bar-clear" onclick="clearCompare()">Clear</button>
+    </div>
+
+    <div id="compareModal" class="compare-modal">
+        <div class="compare-modal-content">
+            <div class="compare-header">
+                <h2>Side-by-Side Comparison</h2>
+                <span class="close-modal" onclick="closeCompareModal()">&times;</span>
+            </div>
+            <div class="compare-body">
+                <div id="quickCompareSelector" class="quick-compare-selector" style="display: none;">
+                    <h3>Select 2-3 Accounts to Compare <span style="font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.6);">(compare between or across firms)</span></h3>
+                    <div class="quick-compare-grid">
+                        <div class="quick-compare-dropdown">
+                            <label>First Account</label>
+                            <select id="quickFirm1" onchange="updateAccountOptions(1); checkQuickCompareReady()">
+                                <option value="">Choose a firm...</option>
+                                <option value="mffu">MyFundedFutures</option>
+                                <option value="alpha">Alpha Futures</option>
+                                <option value="tradeify">Tradeify</option>
+                                <option value="tpt">TakeProfitTrader</option>
+                                <option value="lucid">Lucid Trading</option>
+                            </select>
+                            <select id="quickAccount1" style="margin-top: 8px;" onchange="checkQuickCompareReady()">
+                                <option value="">Choose account type...</option>
+                            </select>
+                        </div>
+                        <div class="quick-compare-dropdown">
+                            <label>Second Account</label>
+                            <select id="quickFirm2" onchange="updateAccountOptions(2); checkQuickCompareReady()">
+                                <option value="">Choose a firm...</option>
+                                <option value="mffu">MyFundedFutures</option>
+                                <option value="alpha">Alpha Futures</option>
+                                <option value="tradeify">Tradeify</option>
+                                <option value="tpt">TakeProfitTrader</option>
+                                <option value="lucid">Lucid Trading</option>
+                            </select>
+                            <select id="quickAccount2" style="margin-top: 8px;" onchange="checkQuickCompareReady()">
+                                <option value="">Choose account type...</option>
+                            </select>
+                        </div>
+                        <div class="quick-compare-dropdown">
+                            <label>Third Account (Optional)</label>
+                            <select id="quickFirm3" onchange="updateAccountOptions(3); checkQuickCompareReady()">
+                                <option value="">Choose a firm...</option>
+                                <option value="mffu">MyFundedFutures</option>
+                                <option value="alpha">Alpha Futures</option>
+                                <option value="tradeify">Tradeify</option>
+                                <option value="tpt">TakeProfitTrader</option>
+                                <option value="lucid">Lucid Trading</option>
+                            </select>
+                            <select id="quickAccount3" style="margin-top: 8px;" onchange="checkQuickCompareReady()">
+                                <option value="">Choose account type...</option>
+                            </select>
+                        </div>
+                        <button class="quick-compare-btn" onclick="executeQuickCompare()" id="quickCompareExecute" disabled>Compare These Accounts →</button>
+                    </div>
+                </div>
+                <div id="compareGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFirms = [];
+        let currentFilter = 'all';
+        
+        const firms = {
+            mffu: {
+                name: 'MyFundedFutures',
+                code: 'RT',
+                discount: '5% OFF',
+                url: 'https://myfundedfutures.com/?ref=552',
+                maxAccounts: 3,
+                accounts: [
+                    { type: 'Core Plan', name: 'Core - $50K', price: '$72', accountSize: '$50K', maxPayout: '$1K per payout', profitSplit: '80%', profitTarget: '$3K', drawdown: '$2K max loss', evaluation: '1-Phase', payoutFreq: 'Weekly (5 winning days)' },
+                    { type: 'Scale Plan', name: 'Scale - $50K', price: '$121', accountSize: '$50K', maxPayout: 'Increases w/ payouts', profitSplit: '80%', profitTarget: '$3K', drawdown: '$2K EOD', evaluation: '1-Phase', payoutFreq: '(5 winning days)' },
+                    { type: 'Scale Plan', name: 'Scale - $100K', price: '$254', accountSize: '$100K', maxPayout: 'Increases w/ payouts', profitSplit: '80%', profitTarget: '$6K', drawdown: '$3K EOD', evaluation: '1-Phase', payoutFreq: '(5 winning days)' },
+                    { type: 'Scale Plan', name: 'Scale - $150K', price: '$358', accountSize: '$150K', maxPayout: 'Increases w/ payouts', profitSplit: '80%', profitTarget: '$9K', drawdown: '$4.5K EOD', evaluation: '1-Phase', payoutFreq: '(5 winning days)' },
+                    { type: 'Pro Plan', name: 'Pro - $50K', price: '$216', accountSize: '$50K', maxPayout: '$100K cap', profitSplit: '80%', profitTarget: '$3K', drawdown: '$2K EOD', evaluation: '1-Phase', payoutFreq: 'Every 14 days' },
+                    { type: 'Pro Plan', name: 'Pro - $100K', price: '$327', accountSize: '$100K', maxPayout: '$100K cap', profitSplit: '80%', profitTarget: '$6K', drawdown: '$3K EOD', evaluation: '1-Phase', payoutFreq: 'Every 14 days' },
+                    { type: 'Pro Plan', name: 'Pro - $150K', price: '$453', accountSize: '$150K', maxPayout: '$100K cap', profitSplit: '80%', profitTarget: '$9K', drawdown: '$4.5K EOD', evaluation: '1-Phase', payoutFreq: 'Every 14 days' }
+                ]
+            },
+            alpha: {
+                name: 'Alpha Futures',
+                code: 'RT',
+                discount: '10% OFF',
+                url: 'https://app.alpha-futures.com/signup/RAKE/',
+                maxAccounts: 3,
+                accounts: [
+                    { name: '$25K Account', price: '$72', accountSize: '$25K', maxPayout: '$750-$1.5K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$50K Account - Standard', price: '$79', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$50K Account - Advanced', price: '$139', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$50K Account - Zero', price: '$99', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$100K Account - Standard', price: '$159', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$100K Account - Advanced', price: '$279', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$100K Account - Zero', price: '$199', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$150K Account - Standard', price: '$239', accountSize: '$150K', maxPayout: '$4.5K-$9K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' },
+                    { name: '$150K Account - Advanced', price: '$419', accountSize: '$150K', maxPayout: '$4.5K-$9K', profitSplit: '90%', profitTarget: '10%', drawdown: '3%', evaluation: '1-Phase', payoutFreq: 'Weekly' }
+                ]
+            },
+            tradeify: {
+                name: 'Tradeify',
+                code: 'RT',
+                discount: '30% OFF',
+                url: 'https://tradeify.co/?ref=2676',
+                maxAccounts: 5,
+                accounts: [
+                    { type: 'Growth (Evaluation)', name: 'Growth - $50K', price: '$97', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase (Min 1 day)', payoutFreq: 'Every 10 days' },
+                    { type: 'Growth (Evaluation)', name: 'Growth - $100K', price: '$174', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase (Min 1 day)', payoutFreq: 'Every 10 days' },
+                    { type: 'Growth (Evaluation)', name: 'Growth - $150K', price: '$237', accountSize: '$150K', maxPayout: '$4.5K-$9K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase (Min 1 day)', payoutFreq: 'Every 10 days' },
+                    { type: 'Lightning (Instant Funding)', name: 'Lightning - $25K', price: '$244', accountSize: '$25K', maxPayout: '$750-$1.5K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '4%', evaluation: 'Instant Funding', payoutFreq: 'Every 10 days' },
+                    { type: 'Lightning (Instant Funding)', name: 'Lightning - $50K', price: '$356', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '5%', evaluation: 'Instant Funding', payoutFreq: 'Every 10 days' },
+                    { type: 'Lightning (Instant Funding)', name: 'Lightning - $100K', price: '$440', accountSize: '$100K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '5%', evaluation: 'Instant Funding', payoutFreq: 'Every 10 days' },
+                    { type: 'Lightning (Instant Funding)', name: 'Lightning - $150K', price: '$510', accountSize: '$150K', maxPayout: '$2.5K-$5.5K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '6%', evaluation: 'Instant Funding', payoutFreq: 'Every 10 days' },
+                    { type: 'Advanced (Evaluation)', name: 'Advanced - $50K', price: '$48', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase (Min 5 days)', payoutFreq: 'Every 10 days' },
+                    { type: 'Advanced (Evaluation)', name: 'Advanced - $100K', price: '$76', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase (Min 5 days)', payoutFreq: 'Every 10 days' },
+                    { type: 'Advanced (Evaluation)', name: 'Advanced - $150K', price: '$90', accountSize: '$150K', maxPayout: '$4.5K-$9K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase (Min 5 days)', payoutFreq: 'Every 10 days' }
+                ]
+            },
+            tpt: {
+                name: 'TakeProfitTrader',
+                code: 'RT',
+                discount: '40% OFF',
+                url: 'https://takeprofittrader.com/?referralCode=RAKE',
+                maxAccounts: 5,
+                accounts: [
+                    { name: '$25K Account', price: '$90', accountSize: '$25K', maxPayout: '$750-$1.5K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'On-demand' },
+                    { name: '$50K Account', price: '$147', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'On-demand' },
+                    { name: '$75K Account', price: '$147', accountSize: '$75K', maxPayout: '$2.25K-$4.5K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'On-demand' },
+                    { name: '$100K Account', price: '$198', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'On-demand' },
+                    { name: '$125K Account', price: '$216', accountSize: '$125K', maxPayout: '$3.75K-$7.5K', profitSplit: '90%', profitTarget: '6%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'On-demand' }
+                ]
+            },
+            lucid: {
+                name: 'Lucid Trading',
+                code: 'RT',
+                discount: '40% OFF',
+                url: 'https://lucidtrading.com/ref/raketrades/',
+                maxAccounts: 5,
+                accounts: [
+                    { type: 'LucidDirect (Instant)', name: 'LucidDirect - $25K', price: '$108', accountSize: '$25K', maxPayout: '$750-$1.5K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '5%', evaluation: 'Instant Funding', payoutFreq: 'Bi-weekly' },
+                    { type: 'LucidDirect (Instant)', name: 'LucidDirect - $50K', price: '$294', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '5%', evaluation: 'Instant Funding', payoutFreq: 'Bi-weekly' },
+                    { type: 'LucidDirect (Instant)', name: 'LucidDirect - $100K', price: '$432', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '5%', evaluation: 'Instant Funding', payoutFreq: 'Bi-weekly' },
+                    { type: 'LucidDirect (Instant)', name: 'LucidDirect - $150K', price: '$432', accountSize: '$150K', maxPayout: '$4.5K-$9K', profitSplit: '90%', profitTarget: 'N/A', drawdown: '5%', evaluation: 'Instant Funding', payoutFreq: 'Bi-weekly' },
+                    { type: 'LucidTest (Evaluation)', name: 'LucidTest - $50K', price: '$81', accountSize: '$50K', maxPayout: '$1.5K-$3K', profitSplit: '90%', profitTarget: '8%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'Bi-weekly' },
+                    { type: 'LucidTest (Evaluation)', name: 'LucidTest - $100K', price: '$141', accountSize: '$100K', maxPayout: '$3K-$6K', profitSplit: '90%', profitTarget: '8%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'Bi-weekly' },
+                    { type: 'LucidTest (Evaluation)', name: 'LucidTest - $150K', price: '$180', accountSize: '$150K', maxPayout: '$4.5K-$9K', profitSplit: '90%', profitTarget: '8%', drawdown: '4%', evaluation: '1-Phase', payoutFreq: 'Bi-weekly' }
+                ]
+            }
+        };
+
+        // Scroll header effect
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile table scroll detection
+        if (window.innerWidth <= 768) {
+            const tableWrapper = document.querySelector('.table-wrapper');
+            if (tableWrapper) {
+                tableWrapper.addEventListener('scroll', function() {
+                    if (this.scrollLeft > 10) {
+                        this.classList.add('scrolled');
+                    }
+                }, { passive: true });
+            }
+        }
+
+        // Debounced resize handler for performance
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                // Recalculate any necessary layouts
+                if (window.innerWidth <= 768) {
+                    document.querySelectorAll('.compare-grid').forEach(grid => {
+                        if (selectedFirms.length > 0) {
+                            grid.style.gridTemplateColumns = '1fr';
+                        }
+                    });
+                }
+            }, 250);
+        }, { passive: true });
+
+        // Escape key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('accountModal').classList.contains('active')) {
+                    closeModal();
+                }
+                if (document.getElementById('compareModal').classList.contains('active')) {
+                    closeCompareModal();
+                }
+            }
+        });
+
+        // Prevent body scroll when modal is open
+        function preventBodyScroll(prevent) {
+            if (prevent) {
+                document.body.style.overflow = 'hidden';
+                document.body.style.paddingRight = `${window.innerWidth - document.documentElement.clientWidth}px`;
+            } else {
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+        }
+
+        // Copy code functionality
+        function copyCode() {
+            navigator.clipboard.writeText('RT').then(() => {
+                const badge = document.querySelector('.code-badge');
+                const originalText = badge.textContent;
+                badge.textContent = 'COPIED!';
+                badge.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                setTimeout(() => {
+                    badge.textContent = originalText;
+                    badge.style.background = 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%)';
+                }, 2000);
+            });
+        }
+
+        // Filter firms
+        function filterFirms(filter) {
+            currentFilter = filter;
+            const cards = document.querySelectorAll('.firm-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            cards.forEach(card => {
+                const price = parseInt(card.getAttribute('data-price'));
+                const projectx = card.getAttribute('data-projectx');
+                const instant = card.getAttribute('data-instant');
+                const split = parseInt(card.getAttribute('data-split'));
+
+                if (filter === 'all') {
+                    card.classList.remove('hidden');
+                } else if (filter === 'under100') {
+                    card.classList.toggle('hidden', price >= 100);
+                } else if (filter === 'projectx') {
+                    card.classList.toggle('hidden', projectx !== 'yes');
+                } else if (filter === 'instant') {
+                    card.classList.toggle('hidden', instant !== 'yes');
+                } else if (filter === '90split') {
+                    card.classList.toggle('hidden', split < 90);
+                }
+            });
+        }
+
+        // Sort firms
+        function sortFirms(sortBy) {
+            const grid = document.getElementById('firmsGrid');
+            const cards = Array.from(grid.querySelectorAll('.firm-card'));
+
+            cards.sort((a, b) => {
+                switch(sortBy) {
+                    case 'price-low':
+                        return parseInt(a.getAttribute('data-price')) - parseInt(b.getAttribute('data-price'));
+                    case 'price-high':
+                        return parseInt(b.getAttribute('data-price')) - parseInt(a.getAttribute('data-price'));
+                    case 'accounts':
+                        return parseInt(b.getAttribute('data-accounts')) - parseInt(a.getAttribute('data-accounts'));
+                    case 'discount':
+                        return parseInt(b.getAttribute('data-discount')) - parseInt(a.getAttribute('data-discount'));
+                    default:
+                        return 0;
+                }
+            });
+            
+            cards.forEach(card => grid.appendChild(card));
+        }
+
+        function showModal(firmKey) {
+            const firm = firms[firmKey];
+            document.getElementById('modalTitle').textContent = firm.name;
+            document.getElementById('modalSubtitle').textContent = `Use Code: ${firm.code} for ${firm.discount}`;
+            
+            let html = '';
+            
+            if (firm.accounts[0].type) {
+                const groupedAccounts = {};
+                firm.accounts.forEach(acc => {
+                    if (!groupedAccounts[acc.type]) groupedAccounts[acc.type] = [];
+                    groupedAccounts[acc.type].push(acc);
+                });
+                
+                Object.keys(groupedAccounts).forEach(type => {
+                    html += `<div class="account-type-section"><h3>${type}</h3>`;
+                    groupedAccounts[type].forEach(acc => {
+                        html += renderAccount(acc, firm);
+                    });
+                    html += '</div>';
+                });
+            } else {
+                firm.accounts.forEach(acc => {
+                    html += renderAccount(acc, firm);
+                });
+            }
+            
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('accountModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderAccount(acc, firm) {
+            return `
+                <div class="account-item">
+                    <div class="account-name">${acc.name} - ${acc.price}</div>
+                    <div class="account-specs">
+                        <div class="spec-item"><span class="spec-label">Account Size</span><span class="spec-value">${acc.accountSize}</span></div>
+                        <div class="spec-item"><span class="spec-label">Max Payout</span><span class="spec-value">${acc.maxPayout}</span></div>
+                        <div class="spec-item"><span class="spec-label">Profit Split</span><span class="spec-value">${acc.profitSplit}</span></div>
+                        <div class="spec-item"><span class="spec-label">Profit Target</span><span class="spec-value">${acc.profitTarget}</span></div>
+                        <div class="spec-item"><span class="spec-label">Max Drawdown</span><span class="spec-value">${acc.drawdown}</span></div>
+                        <div class="spec-item"><span class="spec-label">Evaluation</span><span class="spec-value">${acc.evaluation}</span></div>
+                        <div class="spec-item"><span class="spec-label">Payout Frequency</span><span class="spec-value">${acc.payoutFreq}</span></div>
+                        <div class="spec-item"><span class="spec-label">Max Accounts</span><span class="spec-value">${firm.maxAccounts}</span></div>
+                    </div>
+                    <a href="${firm.url}" class="cta-btn" target="_blank">Get Started with Code: ${firm.code} →</a>
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            document.getElementById('accountModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('accountModal').addEventListener('click', e => {
+            if (e.target.id === 'accountModal') closeModal();
+        });
+        
+        function handleCardClick(event, firmKey) {
+            const checkbox = document.getElementById(`compare-${firmKey}`);
+            if (!checkbox.contains(event.target)) {
+                showModal(firmKey);
+            }
+        }
+        
+        function toggleCompare(firmKey) {
+            const checkbox = document.getElementById(`compare-${firmKey}`);
+            
+            if (checkbox.checked) {
+                if (selectedFirms.length >= 3) {
+                    checkbox.checked = false;
+                    return;
+                }
+                selectedFirms.push(firmKey);
+            } else {
+                selectedFirms = selectedFirms.filter(f => f !== firmKey);
+            }
+            
+            updateCompareBar();
+        }
+        
+        function updateCompareBar() {
+            const compareBar = document.getElementById('compareBar');
+            const compareBarText = document.getElementById('compareBarText');
+            
+            if (selectedFirms.length === 0) {
+                compareBar.classList.remove('active');
+            } else if (selectedFirms.length === 1) {
+                compareBar.classList.add('active');
+                compareBarText.textContent = `${firms[selectedFirms[0]].name} selected - Select 1-2 more to compare`;
+            } else if (selectedFirms.length === 2) {
+                compareBar.classList.add('active');
+                compareBarText.textContent = `${firms[selectedFirms[0]].name} vs ${firms[selectedFirms[1]].name}`;
+            } else if (selectedFirms.length === 3) {
+                compareBar.classList.add('active');
+                compareBarText.textContent = `Comparing ${selectedFirms.length} firms`;
+            }
+        }
+        
+        function clearCompare() {
+            selectedFirms = [];
+            document.querySelectorAll('.compare-checkbox').forEach(cb => cb.checked = false);
+            updateCompareBar();
+        }
+        
+        function showCompareModal() {
+            if (selectedFirms.length < 2) return;
+
+            document.getElementById('quickCompareSelector').style.display = 'none';
+            document.getElementById('compareGrid').innerHTML = '';
+
+            let selectorsHTML = '';
+            let gridColumns = 'repeat(' + selectedFirms.length + ', 1fr)';
+            
+            selectedFirms.forEach((firmKey, index) => {
+                const firm = firms[firmKey];
+                const firmOptions = firm.accounts.map((acc, idx) => 
+                    `<option value="${idx}">${acc.name} - ${acc.price}</option>`
+                ).join('');
+                
+                selectorsHTML += `
+                    <div class="compare-selector">
+                        <label>Select ${firm.name} Account</label>
+                        <select id="firm${index + 1}Select" onchange="updateComparison()">
+                            ${firmOptions}
+                        </select>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('compareGrid').innerHTML = `
+                <div class="compare-selectors" style="grid-template-columns: ${gridColumns};">
+                    ${selectorsHTML}
+                </div>
+                <div class="compare-grid" id="compareGridContent" style="grid-template-columns: ${gridColumns} !important;"></div>
+            `;
+            
+            document.getElementById('compareModal').classList.add('active');
+            preventBodyScroll(true);
+
+            updateComparison();
+        }
+        
+        function updateComparison() {
+            let compareHTML = '';
+            let accountData = [];
+            
+            // Collect data from all selected firms
+            selectedFirms.forEach((firmKey, index) => {
+                const firm = firms[firmKey];
+                const selectElement = document.getElementById(`firm${index + 1}Select`);
+                const accountIndex = parseInt(selectElement.value);
+                const acc = firm.accounts[accountIndex];
+                accountData.push({ firm, acc });
+            });
+            
+            // Highlight better/worse values
+            const prices = accountData.map(d => parseInt(d.acc.price.replace(/\D/g, '')));
+            const lowestPrice = Math.min(...prices);
+            const highestPrice = Math.max(...prices);
+
+            // Extract max payouts (handle various formats like "$100K cap", "$750-$1.5K", etc.)
+            const maxPayouts = accountData.map(d => {
+                const payoutStr = d.acc.maxPayout;
+                // Extract first number and convert K to thousands
+                const match = payoutStr.match(/\$(\d+(?:\.\d+)?)K/);
+                if (match) {
+                    return parseFloat(match[1]) * 1000;
+                }
+                return 0;
+            });
+            const highestPayout = Math.max(...maxPayouts);
+            const lowestPayout = Math.min(...maxPayouts.filter(p => p > 0));
+
+            // Extract profit splits
+            const profitSplits = accountData.map(d => parseInt(d.acc.profitSplit.replace(/\D/g, '')));
+            const highestSplit = Math.max(...profitSplits);
+            const lowestSplit = Math.min(...profitSplits);
+
+            // Rank payout frequencies (more frequent is better)
+            const payoutFreqRanking = { 'Daily': 4, 'Bi-weekly': 3, 'Weekly': 2, 'On-demand': 1 };
+            const payoutFreqs = accountData.map(d => {
+                const freq = d.acc.payoutFreq;
+                return payoutFreqRanking[freq] || 0;
+            });
+            const bestFreq = Math.max(...payoutFreqs);
+            const worstFreq = Math.min(...payoutFreqs.filter(f => f > 0));
+
+            accountData.forEach(({ firm, acc }, index) => {
+                const currentPrice = parseInt(acc.price.replace(/\D/g, ''));
+                const priceClass = currentPrice === lowestPrice ? 'highlight-better' : currentPrice === highestPrice ? 'highlight-worse' : '';
+
+                const currentPayout = maxPayouts[index];
+                const payoutClass = currentPayout === highestPayout ? 'highlight-better' : currentPayout === lowestPayout ? 'highlight-worse' : '';
+
+                const currentSplit = profitSplits[index];
+                const splitClass = currentSplit === highestSplit ? 'highlight-better' : currentSplit === lowestSplit ? 'highlight-worse' : '';
+
+                const currentFreq = payoutFreqs[index];
+                const freqClass = currentFreq === bestFreq ? 'highlight-better' : currentFreq === worstFreq ? 'highlight-worse' : '';
+
+                compareHTML += `
+                    <div class="compare-firm">
+                        <h3>${firm.name}</h3>
+                        <div class="compare-row">
+                            <span class="compare-label">Account</span>
+                            <span class="compare-value">${acc.name}</span>
+                        </div>
+                        <div class="compare-row ${priceClass}">
+                            <span class="compare-label">Price</span>
+                            <span class="compare-value">${acc.price}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Account Size</span>
+                            <span class="compare-value">${acc.accountSize}</span>
+                        </div>
+                        <div class="compare-row ${payoutClass}">
+                            <span class="compare-label">Max Payout</span>
+                            <span class="compare-value">${acc.maxPayout}</span>
+                        </div>
+                        <div class="compare-row ${splitClass}">
+                            <span class="compare-label">Profit Split</span>
+                            <span class="compare-value">${acc.profitSplit}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Profit Target</span>
+                            <span class="compare-value">${acc.profitTarget}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Max Drawdown</span>
+                            <span class="compare-value">${acc.drawdown}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Evaluation</span>
+                            <span class="compare-value">${acc.evaluation}</span>
+                        </div>
+                        <div class="compare-row ${freqClass}">
+                            <span class="compare-label">Payout Frequency</span>
+                            <span class="compare-value">${acc.payoutFreq}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Max Accounts</span>
+                            <span class="compare-value">${firm.maxAccounts}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Discount Code</span>
+                            <span class="compare-value">${firm.code} (${firm.discount})</span>
+                        </div>
+                        <a href="${firm.url}" class="cta-btn" target="_blank" style="margin-top: 24px;">Get Started with ${firm.name} →</a>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('compareGridContent').innerHTML = compareHTML;
+        }
+        
+        function closeCompareModal() {
+            document.getElementById('compareModal').classList.remove('active');
+            preventBodyScroll(false);
+        }
+        
+        document.getElementById('compareModal').addEventListener('click', e => {
+            if (e.target.id === 'compareModal') closeCompareModal();
+        });
+        
+        function openQuickCompare() {
+            selectedFirms = [];
+            document.querySelectorAll('.compare-checkbox').forEach(cb => cb.checked = false);
+            updateCompareBar();
+
+            document.getElementById('quickCompareSelector').style.display = 'block';
+            document.getElementById('compareGrid').innerHTML = '';
+            document.getElementById('quickFirm1').value = '';
+            document.getElementById('quickFirm2').value = '';
+            document.getElementById('quickFirm3').value = '';
+
+            document.getElementById('quickAccount1').innerHTML = '<option value="">Select a firm first...</option>';
+            document.getElementById('quickAccount2').innerHTML = '<option value="">Select a firm first...</option>';
+            document.getElementById('quickAccount3').innerHTML = '<option value="">Select a firm first...</option>';
+            document.getElementById('quickAccount1').disabled = true;
+            document.getElementById('quickAccount2').disabled = true;
+            document.getElementById('quickAccount3').disabled = true;
+
+            document.getElementById('quickCompareExecute').disabled = true;
+            document.getElementById('compareModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Account data for each firm
+        const accountData = {
+            mffu: {
+                core: {
+                    '50k': { price: 72, dailyLoss: 1200, maxLoss: 2000, split: 80, target: 3000 }
+                },
+                scale: {
+                    '50k': { price: 127, dailyLoss: 1200, maxLoss: 2000, split: 80, target: 3000 },
+                    '100k': { price: 267, dailyLoss: 2400, maxLoss: 4000, split: 80, target: 6000 },
+                    '150k': { price: 377, dailyLoss: 3600, maxLoss: 6000, split: 80, target: 9000 }
+                },
+                pro: {
+                    '50k': { price: 227, dailyLoss: 1200, maxLoss: 2000, split: 80, target: 3000 },
+                    '100k': { price: 344, dailyLoss: 2400, maxLoss: 4000, split: 80, target: 6000 },
+                    '150k': { price: 477, dailyLoss: 3600, maxLoss: 6000, split: 80, target: 9000 }
+                }
+            },
+            tradeify: {
+                growth: {
+                    '50k': { price: 97, dailyLoss: 'None', maxLoss: 2000, split: 90, target: 3000 },
+                    '100k': { price: 174, dailyLoss: 'None', maxLoss: 4000, split: 90, target: 6000 },
+                    '150k': { price: 237, dailyLoss: 'None', maxLoss: 6000, split: 90, target: 9000 }
+                },
+                lightning: {
+                    '50k': { price: 356, dailyLoss: 'None', maxLoss: 2500, split: 90, target: 'N/A' },
+                    '100k': { price: 440, dailyLoss: 'None', maxLoss: 5000, split: 90, target: 'N/A' },
+                    '150k': { price: 510, dailyLoss: 'None', maxLoss: 9000, split: 90, target: 'N/A' }
+                },
+                advanced: {
+                    '50k': { price: 48, dailyLoss: 'None', maxLoss: 2000, split: 90, target: 3000 },
+                    '100k': { price: 76, dailyLoss: 'None', maxLoss: 4000, split: 90, target: 6000 },
+                    '150k': { price: 90, dailyLoss: 'None', maxLoss: 6000, split: 90, target: 9000 }
+                }
+            },
+            tpt: {
+                challenge: {
+                    '25k': { price: 90, dailyLoss: 600, maxLoss: 1000, split: '80→90', target: 1500 },
+                    '50k': { price: 147, dailyLoss: 1200, maxLoss: 2000, split: '80→90', target: 3000 },
+                    '100k': { price: 198, dailyLoss: 2400, maxLoss: 4000, split: '80→90', target: 6000 },
+                    '125k': { price: 216, dailyLoss: 3000, maxLoss: 5000, split: '80→90', target: 7500 }
+                }
+            },
+            alpha: {
+                standard: {
+                    '25k': { price: 72, dailyLoss: 500, maxLoss: 750, split: '70→90', target: 2500 },
+                    '50k': { price: 79, dailyLoss: 1000, maxLoss: 1500, split: '70→90', target: 5000 },
+                    '100k': { price: 159, dailyLoss: 2000, maxLoss: 3000, split: '70→90', target: 10000 },
+                    '150k': { price: 239, dailyLoss: 3000, maxLoss: 4500, split: '70→90', target: 15000 }
+                },
+                advanced: {
+                    '25k': { price: 125, dailyLoss: 500, maxLoss: 750, split: 90, target: 2500 },
+                    '50k': { price: 139, dailyLoss: 1000, maxLoss: 1500, split: 90, target: 5000 },
+                    '100k': { price: 279, dailyLoss: 2000, maxLoss: 3000, split: 90, target: 10000 },
+                    '150k': { price: 419, dailyLoss: 3000, maxLoss: 4500, split: 90, target: 15000 }
+                },
+                zero: {
+                    '25k': { price: 90, dailyLoss: 500, maxLoss: 750, split: 90, target: 2500 },
+                    '50k': { price: 99, dailyLoss: 1000, maxLoss: 1500, split: 90, target: 5000 },
+                    '100k': { price: 199, dailyLoss: 2000, maxLoss: 3000, split: 90, target: 10000 }
+                }
+            },
+            lucid: {
+                lucidtest: {
+                    '50k': { price: 81, dailyLoss: 1200, maxLoss: 2000, split: 90, target: 4000 },
+                    '100k': { price: 141, dailyLoss: 2400, maxLoss: 4000, split: 90, target: 8000 },
+                    '150k': { price: 180, dailyLoss: 3600, maxLoss: 6000, split: 90, target: 12000 }
+                },
+                luciddirect: {
+                    '50k': { price: 294, dailyLoss: 1200, maxLoss: 2500, split: 90, target: 'N/A' },
+                    '100k': { price: 432, dailyLoss: 2400, maxLoss: 5000, split: 90, target: 'N/A' },
+                    '150k': { price: 432, dailyLoss: 3600, maxLoss: 7500, split: 90, target: 'N/A' }
+                }
+            }
+        };
+
+        function updateMffuSizeOptions() {
+            const row = document.querySelector(`tr[data-firm="mffu"]`);
+            const typeSelect = row.querySelectorAll('.account-select')[0];
+            const sizeSelect = document.getElementById('mffu-size');
+            const type = typeSelect.value;
+
+            sizeSelect.innerHTML = '';
+
+            if (type === 'core') {
+                sizeSelect.innerHTML = '<option value="50k">$50,000</option>';
+            } else {
+                sizeSelect.innerHTML = `
+                    <option value="50k">$50,000</option>
+                    <option value="100k">$100,000</option>
+                    <option value="150k">$150,000</option>
+                `;
+            }
+
+            updateAccountData('mffu');
+        }
+
+        function updateAlphaSizeOptions() {
+            const row = document.querySelector(`tr[data-firm="alpha"]`);
+            const typeSelect = row.querySelectorAll('.account-select')[0];
+            const sizeSelect = document.getElementById('alpha-size');
+            const type = typeSelect.value;
+
+            sizeSelect.innerHTML = '';
+
+            if (type === 'zero') {
+                sizeSelect.innerHTML = `
+                    <option value="25k">$25,000</option>
+                    <option value="50k">$50,000</option>
+                    <option value="100k">$100,000</option>
+                `;
+            } else {
+                sizeSelect.innerHTML = `
+                    <option value="25k">$25,000</option>
+                    <option value="50k">$50,000</option>
+                    <option value="100k">$100,000</option>
+                    <option value="150k">$150,000</option>
+                `;
+            }
+
+            updateAccountData('alpha');
+        }
+
+        function updateAccountData(firm) {
+            const row = document.querySelector(`tr[data-firm="${firm}"]`);
+            const selects = row.querySelectorAll('.account-select');
+            const type = selects[0].value;
+            const size = selects[1].value;
+
+            if (!accountData[firm][type] || !accountData[firm][type][size]) {
+                row.querySelector('[data-price]').textContent = 'N/A';
+                row.querySelector('[data-daily-loss]').textContent = 'N/A';
+                row.querySelector('[data-max-loss]').textContent = 'N/A';
+                row.querySelector('[data-split]').textContent = 'N/A';
+                row.querySelector('[data-target]').textContent = 'N/A';
+                return;
+            }
+
+            const data = accountData[firm][type][size];
+
+            row.querySelector('[data-price]').textContent = `$${data.price}`;
+            row.querySelector('[data-daily-loss]').textContent = data.dailyLoss === 'None' ? 'None' : `$${data.dailyLoss}`;
+            row.querySelector('[data-max-loss]').textContent = `$${data.maxLoss}`;
+            row.querySelector('[data-split]').textContent = typeof data.split === 'number' ? `${data.split}%` : data.split;
+            row.querySelector('[data-target]').textContent = data.target === 'N/A' ? 'N/A' : `$${data.target}`;
+        }
+
+        function displayDetailedComparison(selections) {
+            document.getElementById('quickCompareSelector').style.display = 'none';
+
+            const accountData = selections.map(sel => {
+                const firm = firms[sel.firm];
+                if (!firm) {
+                    console.error('Firm not found:', sel.firm);
+                    return null;
+                }
+                const acc = firm.accounts[sel.accountIndex];
+                if (!acc) {
+                    console.error('Account not found:', sel.accountIndex, 'for firm:', sel.firm);
+                    return null;
+                }
+                return { firm, acc };
+            }).filter(item => item !== null);
+
+            if (accountData.length < 2) {
+                document.getElementById('compareGrid').innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">Please select at least 2 accounts to compare.</div>';
+                return;
+            }
+
+            // Extract comparison values
+            const prices = accountData.map(d => parseInt(d.acc.price.replace(/\D/g, '')));
+            const lowestPrice = Math.min(...prices);
+            const highestPrice = Math.max(...prices);
+
+            // Extract max payouts (handle various formats like "$100K cap", "$750-$1.5K", etc.)
+            const maxPayouts = accountData.map(d => {
+                const payoutStr = d.acc.maxPayout;
+                // Extract first number and convert K to thousands
+                const match = payoutStr.match(/\$(\d+(?:\.\d+)?)K/);
+                if (match) {
+                    return parseFloat(match[1]) * 1000;
+                }
+                return 0;
+            });
+            const highestPayout = Math.max(...maxPayouts);
+            const lowestPayout = Math.min(...maxPayouts.filter(p => p > 0));
+
+            // Extract profit splits
+            const profitSplits = accountData.map(d => parseInt(d.acc.profitSplit.replace(/\D/g, '')));
+            const highestSplit = Math.max(...profitSplits);
+            const lowestSplit = Math.min(...profitSplits);
+
+            // Rank payout frequencies (more frequent is better)
+            const payoutFreqRanking = { 'Daily': 4, 'Bi-weekly': 3, 'Weekly': 2, 'On-demand': 1 };
+            const payoutFreqs = accountData.map(d => {
+                const freq = d.acc.payoutFreq;
+                return payoutFreqRanking[freq] || 0;
+            });
+            const bestFreq = Math.max(...payoutFreqs);
+            const worstFreq = Math.min(...payoutFreqs.filter(f => f > 0));
+
+            let compareHTML = '';
+
+            accountData.forEach(({ firm, acc }, index) => {
+                const currentPrice = parseInt(acc.price.replace(/\D/g, ''));
+                const priceClass = currentPrice === lowestPrice ? 'highlight-better' : currentPrice === highestPrice ? 'highlight-worse' : '';
+
+                const currentPayout = maxPayouts[index];
+                const payoutClass = currentPayout === highestPayout ? 'highlight-better' : currentPayout === lowestPayout ? 'highlight-worse' : '';
+
+                const currentSplit = profitSplits[index];
+                const splitClass = currentSplit === highestSplit ? 'highlight-better' : currentSplit === lowestSplit ? 'highlight-worse' : '';
+
+                const currentFreq = payoutFreqs[index];
+                const freqClass = currentFreq === bestFreq ? 'highlight-better' : currentFreq === worstFreq ? 'highlight-worse' : '';
+
+                compareHTML += `
+                    <div class="compare-firm">
+                        <h3>${firm.name}</h3>
+                        <div class="compare-row">
+                            <span class="compare-label">Account</span>
+                            <span class="compare-value">${acc.name}</span>
+                        </div>
+                        <div class="compare-row ${priceClass}">
+                            <span class="compare-label">Price</span>
+                            <span class="compare-value">${acc.price}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Account Size</span>
+                            <span class="compare-value">${acc.accountSize}</span>
+                        </div>
+                        <div class="compare-row ${payoutClass}">
+                            <span class="compare-label">Max Payout</span>
+                            <span class="compare-value">${acc.maxPayout}</span>
+                        </div>
+                        <div class="compare-row ${splitClass}">
+                            <span class="compare-label">Profit Split</span>
+                            <span class="compare-value">${acc.profitSplit}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Profit Target</span>
+                            <span class="compare-value">${acc.profitTarget}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Max Drawdown</span>
+                            <span class="compare-value">${acc.drawdown}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Evaluation</span>
+                            <span class="compare-value">${acc.evaluation}</span>
+                        </div>
+                        <div class="compare-row ${freqClass}">
+                            <span class="compare-label">Payout Frequency</span>
+                            <span class="compare-value">${acc.payoutFreq}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Max Accounts</span>
+                            <span class="compare-value">${firm.maxAccounts}</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Discount Code</span>
+                            <span class="compare-value">${firm.code} (${firm.discount})</span>
+                        </div>
+                        <a href="${firm.url}" class="cta-btn" target="_blank" style="margin-top: 24px;">Get Started with ${firm.name} →</a>
+                    </div>
+                `;
+            });
+
+            document.getElementById('compareGrid').innerHTML = `
+                <div class="compare-grid-content" id="compareGridContent">
+                    ${compareHTML}
+                </div>
+            `;
+        }
+
+        function quickCompareWith(firmKey) {
+            selectedFirms = [];
+            document.querySelectorAll('.compare-checkbox').forEach(cb => cb.checked = false);
+            updateCompareBar();
+
+            // Reset all selections
+            document.getElementById('quickFirm1').value = firmKey;
+            document.getElementById('quickFirm2').value = '';
+            document.getElementById('quickFirm3').value = '';
+
+            // Reset account dropdowns
+            document.getElementById('quickAccount1').innerHTML = '<option value="">Choose account type...</option>';
+            document.getElementById('quickAccount2').innerHTML = '<option value="">Select a firm first...</option>';
+            document.getElementById('quickAccount3').innerHTML = '<option value="">Select a firm first...</option>';
+            document.getElementById('quickAccount1').disabled = false;
+            document.getElementById('quickAccount2').disabled = true;
+            document.getElementById('quickAccount3').disabled = true;
+
+            // Load accounts for the selected firm
+            updateAccountOptions(1);
+
+            // Show the modal
+            document.getElementById('quickCompareSelector').style.display = 'block';
+            document.getElementById('compareGrid').innerHTML = '';
+            document.getElementById('compareModal').classList.add('active');
+            preventBodyScroll(true);
+            checkQuickCompareReady();
+        }
+        
+        function updateAccountOptions(slotNumber) {
+            try {
+                const firmSelect = document.getElementById(`quickFirm${slotNumber}`);
+                const accountSelect = document.getElementById(`quickAccount${slotNumber}`);
+
+                if (!firmSelect || !accountSelect) {
+                    console.error('Could not find select elements for slot', slotNumber);
+                    return;
+                }
+
+                const firmKey = firmSelect.value;
+
+                if (!firmKey) {
+                    accountSelect.innerHTML = '<option value="">Select a firm first...</option>';
+                    accountSelect.disabled = true;
+                    return;
+                }
+
+                accountSelect.disabled = false;
+                accountSelect.innerHTML = '<option value="">Choose account type...</option>';
+
+                if (typeof firms === 'undefined') {
+                    console.error('Firms object is not defined');
+                    accountSelect.innerHTML = '<option value="">Error loading data...</option>';
+                    accountSelect.disabled = true;
+                    return;
+                }
+
+                const firm = firms[firmKey];
+                if (!firm) {
+                    accountSelect.innerHTML = '<option value="">Firm not found...</option>';
+                    accountSelect.disabled = true;
+                    return;
+                }
+
+                firm.accounts.forEach((acc, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = acc.name;
+                    accountSelect.appendChild(option);
+                });
+
+                // Auto-populate other dropdowns with the same firm if not already set
+                if (slotNumber === 1) {
+                    // When firm 1 is selected, populate firm 2 and 3 if they're empty
+                    const firm2 = document.getElementById('quickFirm2');
+                    const firm3 = document.getElementById('quickFirm3');
+
+                    if (firm2 && !firm2.value) {
+                        firm2.value = firmKey;
+                        updateAccountOptions(2);
+                    }
+                    if (firm3 && !firm3.value) {
+                        firm3.value = firmKey;
+                        updateAccountOptions(3);
+                    }
+                }
+            } catch (error) {
+                console.error('Error in updateAccountOptions:', error);
+            }
+        }
+
+        function checkQuickCompareReady() {
+            const firm1 = document.getElementById('quickFirm1').value;
+            const firm2 = document.getElementById('quickFirm2').value;
+            const firm3 = document.getElementById('quickFirm3').value;
+            const acc1 = document.getElementById('quickAccount1').value;
+            const acc2 = document.getElementById('quickAccount2').value;
+            const acc3 = document.getElementById('quickAccount3').value;
+            const btn = document.getElementById('quickCompareExecute');
+
+            const selected = [];
+            if (firm1 && acc1) selected.push({ firm: firm1, account: acc1 });
+            if (firm2 && acc2) selected.push({ firm: firm2, account: acc2 });
+            if (firm3 && acc3) selected.push({ firm: firm3, account: acc3 });
+
+            btn.disabled = selected.length < 2;
+        }
+        
+        function executeQuickCompare() {
+            const selections = [];
+
+            for (let i = 1; i <= 3; i++) {
+                const firmKey = document.getElementById(`quickFirm${i}`).value;
+                const accIndex = document.getElementById(`quickAccount${i}`).value;
+
+                if (firmKey && accIndex !== '') {
+                    selections.push({ firm: firmKey, accountIndex: parseInt(accIndex) });
+                }
+            }
+
+            if (selections.length < 2) return;
+
+            displayDetailedComparison(selections);
+        }
+    </script>
+
+</body>
+</html>
