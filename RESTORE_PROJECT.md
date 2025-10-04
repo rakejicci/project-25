@@ -1,60 +1,71 @@
-# ToolsRT Project Snapshot
+# ToolsRT Project - Restoration Guide
 
-## Snapshot Details
-- **Project Name**: toolsrt
-- **Snapshot ID**: `0aa195ef-9842-442c-8821-8310fe5a2166`
-- **Description**: ToolsRT.com - Prop Trading Firm Comparison Tool
-- **Created**: October 2025
-- **Git Commit**: 05cafcc
+## ⚠️ Important Discovery
+
+**Bolt Database Limitation**: Each Bolt chat has its own separate Supabase database instance. Database snapshots don't persist across different chat sessions.
+
+## ✅ Working Solution: JSON Backup
+
+**Backup File**: `toolsrt-backup.json` (301 KB)
+
+This file contains:
+- All 9 project files (HTML, config files)
+- Project metadata
+- Ready to restore instantly
 
 ## How to Restore in a New Chat
 
-Simply say one of these commands to Claude:
+**Method 1: Upload & Restore (Recommended)**
+1. Download `toolsrt-backup.json` from this chat
+2. In a new chat, upload the file
+3. Say: **"Restore from toolsrt-backup.json"**
 
-1. **"Restore my ToolsRT project from the database"**
-2. **"Load project: toolsrt"**
-3. **"Get my toolsrt snapshot from Supabase"**
+Claude will automatically recreate all files.
 
-Claude will:
-- Query the `project_snapshots` table for your project
-- Retrieve all files from the `project_files` table
-- Recreate the entire directory structure
-- You'll be ready to edit immediately
+**Method 2: Manual Restoration**
+1. Upload `toolsrt-backup.json`
+2. Run: `node restore-from-backup.js toolsrt-backup.json`
+3. Run: `npm install`
 
-## Database Schema
+## Files Included (9 total)
 
-### project_snapshots
-- Stores project metadata
-- Public read access (retrieve from any chat)
-- Contains: project_name, description, version, metadata
+1. **index.html** (148 KB) - Main comparison tool
+2. **firm-alpha-futures.html** (30 KB)
+3. **firm-lucid.html** (31 KB)
+4. **firm-myfundedfutures.html** (30 KB)
+5. **firm-takeprofittrader.html** (27 KB)
+6. **firm-tradeify.html** (31 KB)
+7. **package.json** - Dependencies
+8. **.gitignore** - Git ignore rules
+9. **.gitattributes** - Git attributes
 
-### project_files
-- Stores individual file contents
-- Linked to snapshots via `snapshot_id`
-- Contains: file_path, content
+## Alternative: GitHub (Best for Long-Term)
 
-## Current Snapshot Status
+For persistent, editable access across all chats:
 
-✅ Database tables created
-✅ Snapshot record created (ID: 0aa195ef-9842-442c-8821-8310fe5a2166)
-✅ Small files stored: package.json, .gitignore, .gitattributes
-⚠️  Large HTML files pending (can be added later or retrieved from git)
+1. Create GitHub repo: https://github.com/new
+2. Push this code:
+```bash
+git remote add origin https://github.com/YOUR-USERNAME/toolsrt.git
+git branch -M main
+git push -u origin main
+```
 
-## Files in This Snapshot
+3. In future chats, say: **"Clone github.com/YOUR-USERNAME/toolsrt"**
 
-1. index.html (148KB) - Main comparison tool
-2. firm-alpha-futures.html (30KB) - Alpha Futures review
-3. firm-lucid.html (31KB) - Lucid review
-4. firm-myfundedfutures.html (30KB) - My Funded Futures review
-5. firm-takeprofittrader.html (27KB) - TakeProfitTrader review
-6. firm-tradeify.html (31KB) - Tradeify review
-7. package.json - Project dependencies
-8. .gitignore - Git ignore rules
-9. .gitattributes - Git attributes
+### Benefits of GitHub:
+- ✅ Edit from any device/IDE
+- ✅ Version history
+- ✅ Works across all AI chats
+- ✅ Can be private or public
+- ✅ No file size limits
 
-## Alternative: Git Repository
+## Quick Reference
 
-This project is also version controlled with git. You can:
-1. Push to GitHub for easy editing
-2. Share the repo URL with Claude in future chats
-3. Edit files via GitHub web editor, VS Code, or any IDE
+| Method | Speed | Persistence | Easy Editing |
+|--------|-------|-------------|--------------|
+| JSON Backup | ⚡ Fast | ❌ Manual download required | ❌ No |
+| GitHub Repo | 🚀 Instant | ✅ Forever | ✅ Yes |
+| Bolt Database | ⚡ Fast | ❌ Chat-specific only | ❌ No |
+
+**Recommendation**: Use GitHub for long-term storage and easy editing.
